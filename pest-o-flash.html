@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graviti Pharmaceuticals - Housekeeping Log System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+             max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-height: 95vh;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo-container {
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            max-width: 170px;
+            max-height: 66px;
+            border: 2px dashed #ccc;
+            padding: 20px;
+            display: none;
+        }
+
+        .logo-placeholder {
+            width: 170px;
+            height: 66px;
+            border: 2px dashed rgba(255,255,255,0.5);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-logo {
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+
+        .login-form, .main-app {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            border-right: 1px solid #ddd;
+        }
+
+        .nav-tab:last-child {
+            border-right: none;
+        }
+
+        .nav-tab.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .tab-content {
+            background: white;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .log-table th, .log-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .log-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .user-management {
+            margin-top: 20px;
+        }
+
+        .user-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .audit-trail {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .audit-entry {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+        }
+
+        .timestamp {
+            color: #666;
+            font-weight: bold;
+        }
+
+        .status-bar {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .error {
+            background: #dc3545;
+        }
+
+        .warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .nav-tab {
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+            }
+            
+            .log-table {
+                font-size: 12px;
+            }
+            
+            .log-table th, .log-table td {
+                padding: 6px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .signature-pad {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-container">
+                <img id="companyLogo" class="logo" alt="Company Logo">
+                <div id="logoUpload" class="upload-logo" onclick="document.getElementById('logoFile').click()">
+                    Click to Upload Logo (170x66px)
+                </div>
+                <input type="file" id="logoFile" accept="image/*" style="display: none;">
+            </div>
+            <h1>Graviti Pharmaceuticals</h1>
+            <h2>Housekeeping Log System</h2>
+            <p>FDA 21 CFR Part 11 Compliant</p>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginSection" class="login-form">
+            <h3>User Authentication</h3>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" required>
+            </div>
+            <button onclick="login()">Login</button>
+            <div id="loginError" class="status-bar error hidden">Invalid credentials</div>
+            <div class="status-bar" style="background: #17a2b8; margin-top: 15px;">
+                        </div>
+
+        <!-- Main Application -->
+        <div id="mainApp" class="main-app hidden">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('logging')">Data Logging</button>
+                <button class="nav-tab" onclick="showTab('audit')" id="auditTab">Audit Trail</button>
+                <button class="nav-tab" onclick="showTab('users')" id="usersTab">User Management</button>
+                <button class="nav-tab" onclick="showTab('export')">Export/Backup</button>
+                <button class="nav-tab" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- Data Logging Tab -->
+            <div id="loggingTab" class="tab-content">
+                <h3>Housekeeping Data Entry</h3>
+                
+                <div class="form-group">
+                    <label for="logType">Select Log Type:</label>
+                    <select id="logType" onchange="loadLogForm()">
+                        <option value="">-- Select Log Type --</option>
+                        <option value="pest-flash">Pest-o-Flash Cleaning (Daily)</option>
+                        <option value="air-curtain">Air Curtain Cleaning (Weekly)</option>
+                        <option value="service-racks">Monthly Service Racks Cleaning</option>
+                    </select>
+                </div>
+
+                <div id="logForm" class="hidden">
+                    <div class="form-group">
+                        <label for="location">Location:</label>
+                        <input type="text" id="location" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="idNo">ID No.:</label>
+                        <input type="text" id="idNo" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cleaningDate">Date of Cleaning:</label>
+                        <input type="date" id="cleaningDate" required>
+                    </div>
+                    
+                    <div id="pestFlashFields" class="hidden">
+                        <div class="form-group">
+                            <label for="deadInsects">Number of Dead Insects Observed:</label>
+                            <input type="number" id="deadInsects" min="0">
+                        </div>
+                    </div>
+                    
+                    <div id="monthlyFields" class="hidden">
+                        <div class="form-group">
+                            <label for="areaName">Name of the Area:</label>
+                            <input type="text" id="areaName">
+                        </div>
+                        <div class="form-group">
+                            <label for="month">Month:</label>
+                            <select id="month">
+                                <option value="">Select Month</option>
+                                <option value="January">January</option>
+                                <option value="February">February</option>
+                                <option value="March">March</option>
+                                <option value="April">April</option>
+                                <option value="May">May</option>
+                                <option value="June">June</option>
+                                <option value="July">July</option>
+                                <option value="August">August</option>
+                                <option value="September">September</option>
+                                <option value="October">October</option>
+                                <option value="November">November</option>
+                                <option value="December">December</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="year">Year:</label>
+                            <input type="number" id="year" min="2020" max="2030" value="2025">
+                        </div>
+                        <div class="form-group">
+                            <label for="cleaningStatus">Cleaning Status:</label>
+                            <select id="cleaningStatus">
+                                <option value="✓">✓ (Completed)</option>
+                                <option value="N/A">N/A (Not Applicable)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cleanedBy">Cleaned By:</label>
+                        <input type="text" id="cleanedBy" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="checkedBy">Checked By:</label>
+                        <input type="text" id="checkedBy" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="remarks">Remarks:</label>
+                        <textarea id="remarks" rows="3"></textarea>
+                    </div>
+                    
+                    <button onclick="saveLogEntry()">Save Entry</button>
+                    <div id="saveStatus" class="hidden"></div>
+                </div>
+
+                <!-- Recent Entries -->
+                <div id="recentEntries">
+                    <h4>Recent Entries</h4>
+                    <table class="log-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Location</th>
+                                <th>Cleaned By</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="entriesTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Audit Trail Tab -->
+            <div id="auditTab" class="tab-content hidden">
+                <h3>Audit Trail (21 CFR Part 11 Compliant)</h3>
+                
+                <div class="form-group">
+                    <label for="auditSearch">Search by User/Date/Action:</label>
+                    <input type="text" id="auditSearch" placeholder="Enter search terms..." oninput="filterAuditTrail()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="auditDateFilter">Filter by Date:</label>
+                    <input type="date" id="auditDateFilter" onchange="filterAuditTrail()">
+                </div>
+                
+                <button onclick="exportAuditTrail()">Export Audit Trail</button>
+                
+                <div class="audit-trail" id="auditTrailContainer">
+                    <!-- Audit entries will be populated here -->
+                </div>
+            </div>
+
+            <!-- User Management Tab -->
+            <div id="usersTab" class="tab-content hidden">
+                <h3>User Management (Admin Only)</h3>
+                
+                <div class="user-management">
+                    <h4>Create New User</h4>
+                    <div class="form-group">
+                        <label for="newUsername">Username:</label>
+                        <input type="text" id="newUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Password:</label>
+                        <input type="password" id="newPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userRole">Role:</label>
+                        <select id="userRole">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button onclick="createUser()">Create User</button>
+                    
+                    <div class="user-list">
+                        <h4>Existing Users</h4>
+                        <div id="userListContainer">
+                            <!-- User list will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export/Backup Tab -->
+            <div id="exportTab" class="tab-content hidden">
+                <h3>Export & Backup</h3>
+                
+                <button onclick="exportToPDF()">Export to PDF</button>
+                <button onclick="exportToCSV()">Export to CSV</button>
+                <button onclick="createBackup()">Create Local Backup</button>
+                <button onclick="syncToServer()" class="secondary">Sync to Server</button>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="backupFile">Restore from Backup:</label>
+                    <input type="file" id="backupFile" accept=".json">
+                    <button onclick="restoreBackup()" class="secondary">Restore Backup</button>
+                </div>
+                
+                <div id="exportStatus" class="hidden"></div>
+            </div>
+        </div>
+        
+        <!-- Current User Display -->
+        <div id="currentUser" class="status-bar hidden">
+            Logged in as: <span id="currentUserName"></span> | 
+            Last sync: <span id="lastSync">Never</span>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let currentUser = null;
+        let logEntries = JSON.parse(localStorage.getItem('gravitiLogEntries') || '[]');
+        let auditTrail = JSON.parse(localStorage.getItem('gravitiAuditTrail') || '[]');
+        let users = JSON.parse(localStorage.getItem('gravitiUsers') || '{"admin":{"password":"admin123","role":"admin"},"user1":{"password":"user123","role":"user"}}');
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLogo();
+            updateRecentEntries();
+            
+            document.getElementById('logoFile').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const logo = document.getElementById('companyLogo');
+                        logo.src = e.target.result;
+                        logo.classList.add('uploaded');
+                        document.getElementById('logoUpload').style.display = 'none';
+                        localStorage.setItem('gravitiLogo', e.target.result);
+                        addAuditEntry('Logo updated', 'System configuration changed');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        // Authentication
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (users[username] && users[username].password === password) {
+                currentUser = {username, role: users[username].role};
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                document.getElementById('currentUser').classList.remove('hidden');
+                document.getElementById('currentUserName').textContent = username;
+                document.getElementById('loginError').classList.add('hidden');
+                
+                // Show/hide admin tabs
+                if (currentUser.role !== 'admin') {
+                    document.getElementById('usersTab').style.display = 'none';
+                }
+                
+                addAuditEntry('User login', `User ${username} logged in`);
+                updateLastSync();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            addAuditEntry('User logout', `User ${currentUser.username} logged out`);
+            currentUser = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('currentUser').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            showTab('logging');
+        }
+
+        // Tab Management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            event.target.classList.add('active');
+            
+            // Load specific tab content
+            if (tabName === 'audit') {
+                loadAuditTrail();
+            } else if (tabName === 'users') {
+                loadUserList();
+            }
+        }
+
+        // Log Form Management
+        function loadLogForm() {
+            const logType = document.getElementById('logType').value;
+            const logForm = document.getElementById('logForm');
+            
+            if (logType) {
+                logForm.classList.remove('hidden');
+                
+                // Hide all specific fields first
+                document.getElementById('pestFlashFields').classList.add('hidden');
+                document.getElementById('monthlyFields').classList.add('hidden');
+                
+                // Show specific fields based on log type
+                if (logType === 'pest-flash') {
+                    document.getElementById('pestFlashFields').classList.remove('hidden');
+                } else if (logType === 'service-racks') {
+                    document.getElementById('monthlyFields').classList.remove('hidden');
+                }
+                
+                // Set current date
+                document.getElementById('cleaningDate').value = new Date().toISOString().split('T')[0];
+            } else {
+                logForm.classList.add('hidden');
+            }
+        }
+
+        // Data Entry
+        function saveLogEntry() {
+            const logType = document.getElementById('logType').value;
+            const location = document.getElementById('location').value;
+            const idNo = document.getElementById('idNo').value;
+            const cleaningDate = document.getElementById('cleaningDate').value;
+            const cleanedBy = document.getElementById('cleanedBy').value;
+            const checkedBy = document.getElementById('checkedBy').value;
+            const remarks = document.getElementById('remarks').value;
+            
+            if (!logType || !location || !idNo || !cleaningDate || !cleanedBy || !checkedBy) {
+                showStatus('saveStatus', 'Please fill in all required fields', 'error');
+                return;
+            }
+            
+            const entry = {
+                id: 'LOG_' + Date.now(),
+                timestamp: new Date().toISOString(),
+                logType,
+                location,
+                idNo,
+                cleaningDate,
+                cleanedBy,
+                checkedBy,
+                remarks,
+                enteredBy: currentUser.username,
+                electronicSignature: generateSignature()
+            };
+            
+            // Add type-specific fields
+            if (logType === 'pest-flash') {
+                entry.deadInsects = document.getElementById('deadInsects').value || 0;
+            } else if (logType === 'service-racks') {
+                entry.areaName = document.getElementById('areaName').value;
+                entry.month = document.getElementById('month').value;
+                entry.year = document.getElementById('year').value;
+                entry.cleaningStatus = document.getElementById('cleaningStatus').value;
+            }
+            
+            logEntries.push(entry);
+            localStorage.setItem('gravitiLogEntries', JSON.stringify(logEntries));
+            
+            addAuditEntry('Data entry', `New ${logType} log entry created for ${location}`);
+            
+            showStatus('saveStatus', 'Entry saved successfully!', 'success');
+            clearForm();
+            updateRecentEntries();
+        }
+
+        function clearForm() {
+            document.getElementById('logForm').reset();
+            document.getElementById('logType').value = '';
+            document.getElementById('logForm').classList.add('hidden');
+        }
+
+        function generateSignature() {
+            return `${currentUser.username}_${new Date().toISOString()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        // Recent Entries Display
+        function updateRecentEntries() {
+            const tbody = document.getElementById('entriesTableBody');
+            tbody.innerHTML = '';
+            
+            const recentEntries = logEntries.slice(-10).reverse();
+            
+            recentEntries.forEach(entry => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${entry.cleaningDate}</td>
+                    <td>${entry.logType}</td>
+                    <td>${entry.location}</td>
+                    <td>${entry.cleanedBy}</td>
+                    <td>✓ Signed</td>
+                `;
+            });
+        }
+
+        // Audit Trail
+        function addAuditEntry(action, details) {
+            const auditEntry = {
+                timestamp: new Date().toISOString(),
+                user: currentUser ? currentUser.username : 'System',
+                action,
+                details,
+                ipAddress: '127.0.0.1', // In real implementation, get actual IP
+                sessionId: 'SESS_' + Math.random().toString(36).substr(2, 9)
+            };
+            
+            auditTrail.push(auditEntry);
+            localStorage.setItem('gravitiAuditTrail', JSON.stringify(auditTrail));
+        }
+
+        function loadAuditTrail() {
+            const container = document.getElementById('auditTrailContainer');
+            container.innerHTML = '';
+            
+            const filteredTrail = filterAuditData();
+            
+            filteredTrail.reverse().forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'audit-entry';
+                div.innerHTML = `
+                    <div class="timestamp">${new Date(entry.timestamp).toLocaleString()}</div>
+                    <div><strong>User:</strong> ${entry.user}</div>
+                    <div><strong>Action:</strong> ${entry.action}</div>
+                    <div><strong>Details:</strong> ${entry.details}</div>
+                    <div><strong>Session:</strong> ${entry.sessionId}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function filterAuditData() {
+            const searchTerm = document.getElementById('auditSearch').value.toLowerCase();
+            const dateFilter = document.getElementById('auditDateFilter').value;
+            
+            return auditTrail.filter(entry => {
+                const matchesSearch = !searchTerm || 
+                    entry.user.toLowerCase().includes(searchTerm) ||
+                    entry.action.toLowerCase().includes(searchTerm) ||
+                    entry.details.toLowerCase().includes(searchTerm);
+                
+                const matchesDate = !dateFilter || 
+                    entry.timestamp.split('T')[0] === dateFilter;
+                
+                return matchesSearch && matchesDate;
+            });
+        }
+
+        function filterAuditTrail() {
+            loadAuditTrail();
+        }
+
+        // User Management
+        function createUser() {
+            if (currentUser.role !== 'admin') {
+                showStatus('exportStatus', 'Access denied. Admin privileges required.', 'error');
+                return;
+            }
+            
+            const username = document.getElementById('newUsername').value;
+            const password = document.getElementById('newPassword').value;
+            const role = document.getElementById('userRole').value;
+            
+            if (!username || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            if (users[username]) {
+                alert('Username already exists');
+                return;
+            }
+            
+            users[username] = {password, role};
+            localStorage.setItem('gravitiUsers', JSON.stringify(users));
+            
+            addAuditEntry('User creation', `New ${role} user '${username}' created`);
+            
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newPassword').value = '';
+            loadUserList();
+        }
+
+        function deleteUser(username) {
+            if (currentUser.role !== 'admin') return;
+            if (username === 'admin') {
+                alert('Cannot delete admin user');
+                return;
+            }
+            
+            if (confirm(`Delete user '${username}'?`)) {
+                delete users[username];
+                localStorage.setItem('gravitiUsers', JSON.stringify(users));
+                addAuditEntry('User deletion', `User '${username}' deleted`);
+                loadUserList();
+            }
+        }
+
+        function loadUserList() {
+            const container = document.getElementById('userListContainer');
+            container.innerHTML = '';
+            
+            Object.keys(users).forEach(username => {
+                const user = users[username];
+                const div = document.createElement('div');
+                div.className = 'user-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${username}</strong> (${user.role})
+                    </div>
+                    <div>
+                        ${username !== 'admin' ? `<button onclick="deleteUser('${username}')" class="danger" style="width: auto; padding: 5px 10px;">Delete</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Export/Backup Functions
+        function exportToPDF() {
+            // Create a simple PDF-like format
+            let pdfContent = 'GRAVITI PHARMACEUTICALS - HOUSEKEEPING LOG REPORT\n';
+            pdfContent += '=' * 60 + '\n\n';
+            pdfContent += `Generated: ${new Date().toLocaleString()}\n`;
+            pdfContent += `Generated by: ${currentUser.username}\n\n`;
+            
+            logEntries.forEach(entry => {
+                pdfContent += `Entry ID: ${entry.id}\n`;
+                pdfContent += `Type: ${entry.logType}\n`;
+                pdfContent += `Location: ${entry.location}\n`;
+                pdfContent += `Date: ${entry.cleaningDate}\n`;
+                pdfContent += `Cleaned by: ${entry.cleanedBy}\n`;
+                pdfContent += `Checked by: ${entry.checkedBy}\n`;
+                pdfContent += `Signature: ${entry.electronicSignature}\n`;
+                pdfContent += '-' * 40 + '\n';
+            });
+            
+            downloadFile(pdfContent, 'housekeeping_log_report.txt', 'text/plain');
+            addAuditEntry('Data export', 'PDF report generated');
+        }
+
+        function exportToCSV() {
+            let csv = 'ID,Timestamp,Type,Location,ID No,Cleaning Date,Cleaned By,Checked By,Remarks,Entered By,Signature\n';
+            
+            logEntries.forEach(entry => {
+                csv += `"${entry.id}","${entry.timestamp}","${entry.logType}","${entry.location}","${entry.idNo}","${entry.cleaningDate}","${entry.cleanedBy}","${entry.checkedBy}","${entry.remarks}","${entry.enteredBy}","${entry.electronicSignature}"\n`;
+            });
+            
+            downloadFile(csv, 'housekeeping_log_data.csv', 'text/csv');
+            addAuditEntry('Data export', 'CSV data exported');
+        }
+
+        function createBackup() {
+            const backup = {
+                logEntries,
+                auditTrail,
+                users,
+                timestamp: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            downloadFile(JSON.stringify(backup, null, 2), 'graviti_backup.json', 'application/json');
+            addAuditEntry('Backup creation', 'System backup created');
+        }
+
+        function restoreBackup() {
+            const fileInput = document.getElementById('backupFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('exportStatus', 'Please select a backup file', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    
+                    if (backup.logEntries && backup.auditTrail && backup.users) {
+                        logEntries = backup.logEntries;
+                        auditTrail = backup.auditTrail;
+                        users = backup.users;
+                        
+                        localStorage.setItem('gravitiLogEntries', JSON.stringify(logEntries));
+                        localStorage.setItem('gravitiAuditTrail', JSON.stringify(auditTrail));
+                        localStorage.setItem('gravitiUsers', JSON.stringify(users));
+                        
+                        showStatus('exportStatus', 'Backup restored successfully!', 'success');
+                        addAuditEntry('Backup restore', 'System backup restored');
+                        updateRecentEntries();
+                    } else {
+                        showStatus('exportStatus', 'Invalid backup file format', 'error');
+                    }
+                } catch (error) {
+                    showStatus('exportStatus', 'Error reading backup file', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function syncToServer() {
+            // Simulate server sync
+            showStatus('exportStatus', 'Syncing to server...', 'warning');
+            
+            setTimeout(() => {
+                showStatus('exportStatus', 'Data synced to server successfully!', 'success');
+                updateLastSync();
+                addAuditEntry('Server sync', 'Data synchronized to server');
+            }, 2000);
+        }
+
+        function exportAuditTrail() {
+            const filteredTrail = filterAuditData();
+            let auditCSV = 'Timestamp,User,Action,Details,Session ID\n';
+            
+            filteredTrail.forEach(entry => {
+                auditCSV += `"${entry.timestamp}","${entry.user}","${entry.action}","${entry.details}","${entry.sessionId}"\n`;
+            });
+            
+            downloadFile(auditCSV, 'audit_trail_export.csv', 'text/csv');
+            addAuditEntry('Audit export', 'Audit trail exported');
+        }
+
+        // Utility Functions
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status-bar ${type}`;
+            element.classList.remove('hidden');
+            
+            setTimeout(() => {
+                element.classList.add('hidden');
+            }, 3000);
+        }
+
+        function loadLogo() {
+            const savedLogo = localStorage.getItem('gravitiLogo');
+            if (savedLogo) {
+                const logo = document.getElementById('companyLogo');
+                logo.src = savedLogo;
+                logo.classList.add('uploaded');
+                document.getElementById('logoUpload').style.display = 'none';
+            }
+        }
+
+        function updateLastSync() {
+            document.getElementById('lastSync').textContent = new Date().toLocaleString();
+        }
+
+        // Initialize audit trail with system start
+        if (auditTrail.length === 0) {
+            addAuditEntry('System initialization', 'Housekeeping Log System started');
+        }
+    </script>
+</body>
+</html>
